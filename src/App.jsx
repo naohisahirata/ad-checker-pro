@@ -1,33 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   ClipboardCheck,
   AlertTriangle,
   CheckCircle2,
-  MessageSquare,
   ArrowRightLeft,
   FileText,
-  History,
-  UserCheck,
   Search,
   Plus,
   ArrowLeft,
   Info,
-  ExternalLink,
   ChevronRight,
   Send,
   Check,
   Upload,
-  X,
   FileUp,
   Building2,
-  Calendar
 } from 'lucide-react';
 
 const App = () => {
-  const [view, setView] = useState('list'); // 'list', 'editor', 'registration'
+  const [view, setView] = useState('list');
   const [selectedAd, setSelectedAd] = useState(null);
 
-  // 案件データをステートで管理
   const [ads, setAds] = useState([
     { id: 1, title: '代官山レジデンス 3F', type: 'チラシ', status: '校正中', progress: 65, date: '2023-10-25', priority: '高' },
     { id: 2, title: '新宿パークタワー 15F', type: 'Webバナー', status: '未着手', progress: 0, date: '2023-10-26', priority: '中' },
@@ -35,279 +28,244 @@ const App = () => {
     { id: 4, title: '世田谷テラスハウス', type: 'チラシ', status: '完了', progress: 100, date: '2023-10-23', priority: '低' },
   ]);
 
-  const handleOpenAd = (ad) => {
-    setSelectedAd(ad);
-    setView('editor');
-  };
-
+  const handleOpenAd = (ad) => { setSelectedAd(ad); setView('editor'); };
   const handleRegister = (newAd) => {
-    const adWithId = { ...newAd, id: ads.length + 1, progress: 0, status: '未着手' };
-    setAds([adWithId, ...ads]);
+    setAds([{ ...newAd, id: ads.length + 1, progress: 0, status: '未着手' }, ...ads]);
     setView('list');
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen font-sans" style={{ background: 'linear-gradient(135deg, #052e16 0%, #064e3b 50%, #065f46 100%)' }}>
       {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('list')}>
-          <div className="bg-blue-600 p-1.5 rounded-lg">
+      <nav style={{ background: 'rgba(5, 46, 22, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(52, 211, 153, 0.15)' }}
+        className="px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('list')}>
+          <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 0 16px rgba(16,185,129,0.5)' }} className="p-2 rounded-xl">
             <ClipboardCheck className="text-white w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-800">AdChecker <span className="text-blue-600">PRO</span></h1>
+          <h1 className="text-xl font-black tracking-tight text-white">
+            AdChecker <span style={{ color: '#34d399' }}>PRO</span>
+          </h1>
         </div>
         <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
-            <Search className="w-5 h-5" />
+          <button style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
+            className="p-2 rounded-full transition-all hover:bg-emerald-500/20">
+            <Search className="w-5 h-5 text-emerald-300" />
           </button>
-          <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+          <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 0 12px rgba(16,185,129,0.4)' }}
+            className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm">
             K
           </div>
         </div>
       </nav>
 
       <main className="p-6 max-w-7xl mx-auto">
-        {view === 'list' && (
-          <Dashboard ads={ads} onOpen={handleOpenAd} onStartRegistration={() => setView('registration')} />
-        )}
-        {view === 'editor' && (
-          <ProofreadingEditor ad={selectedAd} onBack={() => setView('list')} />
-        )}
-        {view === 'registration' && (
-          <RegistrationForm onBack={() => setView('list')} onRegister={handleRegister} />
-        )}
+        {view === 'list' && <Dashboard ads={ads} onOpen={handleOpenAd} onStartRegistration={() => setView('registration')} />}
+        {view === 'editor' && <ProofreadingEditor ad={selectedAd} onBack={() => setView('list')} />}
+        {view === 'registration' && <RegistrationForm onBack={() => setView('list')} onRegister={handleRegister} />}
       </main>
     </div>
   );
 };
 
-// --- サブコンポーネント: ダッシュボード ---
-const Dashboard = ({ ads, onOpen, onStartRegistration }) => {
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">案件一覧</h2>
-          <p className="text-slate-500">現在 {ads.length} 件の校正タスクがあります</p>
-        </div>
-        <button
-          onClick={onStartRegistration}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-all shadow-sm"
-        >
-          <Plus className="w-5 h-5" /> 新規案件を登録
-        </button>
+// --- ダッシュボード ---
+const Dashboard = ({ ads, onOpen, onStartRegistration }) => (
+  <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="flex justify-between items-end">
+      <div>
+        <h2 className="text-3xl font-black text-white tracking-tight">案件一覧</h2>
+        <p style={{ color: '#6ee7b7' }} className="mt-1">現在 {ads.length} 件の校正タスクがあります</p>
       </div>
+      <button
+        onClick={onStartRegistration}
+        style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 24px rgba(16,185,129,0.4)' }}
+        className="text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all hover:scale-105"
+      >
+        <Plus className="w-5 h-5" /> 新規案件を登録
+      </button>
+    </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="未着手" value={ads.filter(a => a.status === '未着手').length} color="bg-slate-400" />
-        <StatCard title="校正中" value={ads.filter(a => a.status === '校正中').length} color="bg-amber-500" />
-        <StatCard title="修正依頼中" value={ads.filter(a => a.status === '再確認中').length} color="bg-rose-500" />
-        <StatCard title="完了" value={ads.filter(a => a.status === '完了').length} color="bg-emerald-500" />
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard title="未着手" value={ads.filter(a => a.status === '未着手').length} accent="#94a3b8" glow="rgba(148,163,184,0.3)" />
+      <StatCard title="校正中" value={ads.filter(a => a.status === '校正中').length} accent="#f59e0b" glow="rgba(245,158,11,0.3)" />
+      <StatCard title="再確認中" value={ads.filter(a => a.status === '再確認中').length} accent="#f43f5e" glow="rgba(244,63,94,0.3)" />
+      <StatCard title="完了" value={ads.filter(a => a.status === '完了').length} accent="#10b981" glow="rgba(16,185,129,0.3)" />
+    </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-            <tr>
-              <th className="px-6 py-4 font-semibold">物件名 / 媒体</th>
-              <th className="px-6 py-4 font-semibold">ステータス</th>
-              <th className="px-6 py-4 font-semibold">進捗</th>
-              <th className="px-6 py-4 font-semibold">期限</th>
-              <th className="px-6 py-4 font-semibold text-right">操作</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {ads.map((ad) => (
-              <tr key={ad.id} className="hover:bg-slate-50 transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="font-semibold text-slate-800">{ad.title}</div>
-                  <div className="text-xs text-slate-400">{ad.type}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    ad.status === '完了' ? 'bg-emerald-100 text-emerald-700' :
-                    ad.status === '校正中' ? 'bg-amber-100 text-amber-700' :
-                    ad.status === '再確認中' ? 'bg-rose-100 text-rose-700' :
-                    'bg-slate-100 text-slate-700'
-                  }`}>
-                    {ad.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${ad.progress}%` }}
-                    />
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500">{ad.date}</td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() => onOpen(ad)}
-                    className="text-blue-600 font-medium hover:underline flex items-center gap-1 ml-auto"
-                  >
-                    {ad.status === '完了' ? '詳細を見る' : '校正を開始'} <ChevronRight className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
+    <div style={{ background: 'rgba(5,46,22,0.6)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(8px)' }}
+      className="rounded-2xl overflow-hidden">
+      <table className="w-full text-left">
+        <thead style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
+          <tr>
+            {['物件名 / 媒体', 'ステータス', '進捗', '期限', '操作'].map((h, i) => (
+              <th key={h} style={{ color: '#6ee7b7' }}
+                className={`px-6 py-4 text-xs font-bold uppercase tracking-widest ${i === 4 ? 'text-right' : ''}`}>{h}</th>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        </thead>
+        <tbody>
+          {ads.map((ad) => (
+            <tr key={ad.id} style={{ borderTop: '1px solid rgba(52,211,153,0.08)' }}
+              className="transition-all hover:bg-emerald-500/5 group">
+              <td className="px-6 py-4">
+                <div className="font-bold text-white">{ad.title}</div>
+                <div style={{ color: '#6ee7b7' }} className="text-xs mt-0.5">{ad.type}</div>
+              </td>
+              <td className="px-6 py-4">
+                <StatusBadge status={ad.status} />
+              </td>
+              <td className="px-6 py-4">
+                <div className="w-32 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(52,211,153,0.15)' }}>
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${ad.progress}%`, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
+                </div>
+                <div style={{ color: '#6ee7b7' }} className="text-xs mt-1">{ad.progress}%</div>
+              </td>
+              <td className="px-6 py-4 text-sm" style={{ color: '#a7f3d0' }}>{ad.date}</td>
+              <td className="px-6 py-4 text-right">
+                <button onClick={() => onOpen(ad)}
+                  style={{ color: '#34d399' }}
+                  className="font-bold hover:underline flex items-center gap-1 ml-auto text-sm transition-all group-hover:gap-2">
+                  {ad.status === '完了' ? '詳細を見る' : '校正を開始'} <ChevronRight className="w-4 h-4" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  );
-};
-
-const StatCard = ({ title, value, color }) => (
-  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-    <div>
-      <p className="text-sm text-slate-500 font-medium">{title}</p>
-      <p className="text-2xl font-bold mt-1">{value}</p>
-    </div>
-    <div className={`w-3 h-12 ${color} rounded-full opacity-20`} />
   </div>
 );
 
-// --- サブコンポーネント: 案件登録フォーム ---
-const RegistrationForm = ({ onBack, onRegister }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    type: 'チラシ',
-    priority: '中',
-    date: '',
-    files: {
-      draft: null,
-      source: null
-    }
-  });
+const StatCard = ({ title, value, accent, glow }) => (
+  <div style={{ background: 'rgba(5,46,22,0.6)', border: `1px solid ${accent}30`, backdropFilter: 'blur(8px)', boxShadow: `0 4px 24px ${glow}` }}
+    className="p-5 rounded-2xl flex justify-between items-center">
+    <div>
+      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: accent }}>{title}</p>
+      <p className="text-4xl font-black text-white mt-1">{value}</p>
+    </div>
+    <div className="w-1 h-14 rounded-full" style={{ background: accent, boxShadow: `0 0 12px ${glow}` }} />
+  </div>
+);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.date) return;
-    onRegister(formData);
+const StatusBadge = ({ status }) => {
+  const map = {
+    '完了':    { bg: 'rgba(16,185,129,0.15)', color: '#34d399', border: 'rgba(16,185,129,0.3)' },
+    '校正中':  { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
+    '再確認中':{ bg: 'rgba(244,63,94,0.15)',  color: '#fb7185', border: 'rgba(244,63,94,0.3)' },
+    '未着手':  { bg: 'rgba(148,163,184,0.15)',color: '#94a3b8', border: 'rgba(148,163,184,0.3)' },
+  };
+  const s = map[status] || map['未着手'];
+  return (
+    <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
+      className="px-3 py-1 rounded-full text-xs font-bold">{status}</span>
+  );
+};
+
+// --- 案件登録フォーム ---
+const RegistrationForm = ({ onBack, onRegister }) => {
+  const [formData, setFormData] = useState({ title: '', type: 'チラシ', priority: '中', date: '', files: { draft: null, source: null } });
+  const handleSubmit = (e) => { e.preventDefault(); if (!formData.title || !formData.date) return; onRegister(formData); };
+
+  const inputStyle = {
+    background: 'rgba(5,46,22,0.6)',
+    border: '1px solid rgba(52,211,153,0.2)',
+    color: 'white',
+    outline: 'none',
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 hover:bg-white rounded-full transition-colors">
-          <ArrowLeft className="w-6 h-6" />
+        <button onClick={onBack}
+          style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
+          className="p-2 rounded-xl transition-all hover:bg-emerald-500/20">
+          <ArrowLeft className="w-6 h-6 text-emerald-300" />
         </button>
-        <h2 className="text-2xl font-bold text-slate-800">新規案件の登録</h2>
+        <h2 className="text-2xl font-black text-white">新規案件の登録</h2>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div style={{ background: 'rgba(5,46,22,0.7)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(12px)' }}
+        className="rounded-2xl overflow-hidden">
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {/* 基本情報セクション */}
           <section className="space-y-4">
-            <div className="flex items-center gap-2 text-blue-600 font-bold border-b border-slate-100 pb-2">
-              <Building2 className="w-5 h-5" />
-              <h3>基本情報</h3>
+            <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
+              <Building2 className="w-5 h-5 text-emerald-400" />
+              <h3 className="font-bold text-emerald-400">基本情報</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-2 space-y-2">
-                <label className="text-sm font-medium text-slate-700">物件名・案件タイトル</label>
-                <input
-                  type="text"
-                  placeholder="例：代官山レジデンス 3F リニューアル告知"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  required
-                />
+                <label className="text-sm font-medium text-emerald-300">物件名・案件タイトル</label>
+                <input type="text" placeholder="例：代官山レジデンス 3F リニューアル告知"
+                  style={inputStyle}
+                  className="w-full px-4 py-2.5 rounded-xl placeholder-emerald-900 focus:ring-2 focus:ring-emerald-500 transition-all"
+                  value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">広告媒体</label>
-                <select
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white"
-                  value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                >
-                  <option>チラシ</option>
-                  <option>ポータルサイト</option>
-                  <option>Webバナー</option>
-                  <option>SNS広告</option>
-                  <option>パンフレット</option>
+                <label className="text-sm font-medium text-emerald-300">広告媒体</label>
+                <select style={inputStyle} className="w-full px-4 py-2.5 rounded-xl appearance-none"
+                  value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+                  <option style={{ background: '#052e16' }}>チラシ</option>
+                  <option style={{ background: '#052e16' }}>ポータルサイト</option>
+                  <option style={{ background: '#052e16' }}>Webバナー</option>
+                  <option style={{ background: '#052e16' }}>SNS広告</option>
+                  <option style={{ background: '#052e16' }}>パンフレット</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">校正期限</label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  required
-                />
+                <label className="text-sm font-medium text-emerald-300">校正期限</label>
+                <input type="date" style={{ ...inputStyle, colorScheme: 'dark' }}
+                  className="w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
               </div>
             </div>
           </section>
 
-          {/* アップロードセクション */}
           <section className="space-y-6">
-            <div className="flex items-center gap-2 text-blue-600 font-bold border-b border-slate-100 pb-2">
-              <FileUp className="w-5 h-5" />
-              <h3>データのアップロード</h3>
+            <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
+              <FileUp className="w-5 h-5 text-emerald-400" />
+              <h3 className="font-bold text-emerald-400">データのアップロード</h3>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 元データアップロード */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-700 flex items-center gap-1">
-                    元資料 (物件概要書等) <span className="text-rose-500">*</span>
+              {[
+                { label: '元資料 (物件概要書等)', Icon: FileText, accent: '#10b981' },
+                { label: '校正対象 (制作原稿)', Icon: Upload, accent: '#34d399' },
+              ].map(({ label, Icon, accent }) => (
+                <div key={label} className="space-y-3">
+                  <label className="text-sm font-bold text-emerald-300 flex items-center gap-1">
+                    {label} <span className="text-rose-400">*</span>
                   </label>
-                  <Info className="w-4 h-4 text-slate-400" />
-                </div>
-                <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group">
-                  <div className="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <FileText className="w-6 h-6" />
+                  <div style={{ border: `2px dashed ${accent}40`, background: `${accent}08` }}
+                    className="rounded-xl p-6 text-center cursor-pointer transition-all hover:border-emerald-400/60 hover:bg-emerald-500/10 group">
+                    <div style={{ background: `${accent}20`, color: accent }}
+                      className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-medium text-emerald-200">クリックしてアップロード</p>
+                    <p className="text-xs mt-1" style={{ color: '#6ee7b7' }}>PDF, Excel, PNG, Figmaリンク</p>
                   </div>
-                  <p className="text-sm font-medium text-slate-600">クリックしてファイルをアップロード</p>
-                  <p className="text-xs text-slate-400 mt-1">PDF, Excel, スプレッドシートURL</p>
                 </div>
-              </div>
-
-              {/* 校正対象原稿アップロード */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-700 flex items-center gap-1">
-                    校正対象 (制作原稿) <span className="text-rose-500">*</span>
-                  </label>
-                  <Info className="w-4 h-4 text-slate-400" />
-                </div>
-                <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer group">
-                  <div className="bg-emerald-100 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-600">クリックしてファイルをアップロード</p>
-                  <p className="text-xs text-slate-400 mt-1">PDF, PNG, JPG, Figmaリンク</p>
-                </div>
-              </div>
+              ))}
             </div>
-
-            <div className="bg-amber-50 border border-amber-100 p-4 rounded-lg flex gap-3 items-start">
-              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
+            <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
+              className="p-4 rounded-xl flex gap-3 items-start">
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-200">
                 <p className="font-bold">AI自動照合のヒント</p>
-                <p>元資料に物件概要書をアップロードすると、AIが徒歩分数、面積、所在地、取引態様を自動抽出し、原稿との整合性を即座にチェックします。</p>
+                <p className="mt-0.5 text-amber-300/80">物件概要書をアップロードすると、AIが徒歩分数・面積・所在地・取引態様を自動抽出し、原稿との整合性を即座にチェックします。</p>
               </div>
             </div>
           </section>
 
-          <div className="pt-6 border-t border-slate-100 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onBack}
-              className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
-            >
+          <div className="pt-6 flex justify-end gap-3" style={{ borderTop: '1px solid rgba(52,211,153,0.1)' }}>
+            <button type="button" onClick={onBack}
+              style={{ border: '1px solid rgba(52,211,153,0.3)', color: '#6ee7b7' }}
+              className="px-6 py-2.5 rounded-xl font-medium transition-all hover:bg-emerald-500/10">
               キャンセル
             </button>
-            <button
-              type="submit"
-              className="px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md shadow-blue-200 transition-all"
-            >
+            <button type="submit"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 24px rgba(16,185,129,0.4)' }}
+              className="px-8 py-2.5 rounded-xl text-white font-black transition-all hover:scale-105">
               案件を登録して解析開始
             </button>
           </div>
@@ -317,11 +275,9 @@ const RegistrationForm = ({ onBack, onRegister }) => {
   );
 };
 
-// --- サブコンポーネント: 校正エディタ ---
+// --- 校正エディタ ---
 const ProofreadingEditor = ({ ad, onBack }) => {
-  const [activeTab, setActiveTab] = useState('auto-check'); // 'auto-check', 'manual', 'history'
-
-  // 校正項目モック
+  const [activeTab, setActiveTab] = useState('auto-check');
   const checks = [
     { id: 1, category: '必須表記', item: '取引態様', status: 'ok', value: '媒介', source: '媒介' },
     { id: 2, category: '数値整合', item: '徒歩分数', status: 'error', value: '徒歩5分', source: '徒歩8分', msg: '元資料と3分の乖離があります' },
@@ -330,49 +286,63 @@ const ProofreadingEditor = ({ ad, onBack }) => {
     { id: 5, category: '表現チェック', item: '最強表現', status: 'warning', value: '最高級の設備', msg: '根拠のない「最高」はNGです' },
   ];
 
+  const tabs = [
+    { key: 'auto-check', label: 'AI自動照合' },
+    { key: 'manual', label: 'チェックリスト' },
+    { key: 'history', label: '履歴' },
+  ];
+
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col gap-6 animate-in slide-in-from-right-4 duration-500">
-      {/* Editor Header */}
+    <div className="h-[calc(100vh-140px)] flex flex-col gap-5 animate-in slide-in-from-right-4 duration-500">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
+          <button onClick={onBack}
+            style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
+            className="p-2 rounded-xl transition-all hover:bg-emerald-500/20">
+            <ArrowLeft className="w-5 h-5 text-emerald-300" />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">{ad.title}</h2>
-            <p className="text-sm text-slate-500">制作：佐藤クリエイティブ / {ad.date} 提出</p>
+            <h2 className="text-xl font-black text-white">{ad.title}</h2>
+            <p style={{ color: '#6ee7b7' }} className="text-sm">制作：佐藤クリエイティブ / {ad.date} 提出</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 border border-slate-300 rounded-lg text-slate-600 font-medium hover:bg-white transition-colors">
+          <button style={{ border: '1px solid rgba(52,211,153,0.3)', color: '#6ee7b7' }}
+            className="px-4 py-2 rounded-xl font-medium transition-all hover:bg-emerald-500/10 text-sm">
             修正依頼を送る
           </button>
-          <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" /> 掲載OK（承認）
+          <button style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.4)' }}
+            className="px-4 py-2 text-white rounded-xl font-bold transition-all hover:scale-105 text-sm flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" /> 掲載OK（承認）
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex gap-6 min-h-0">
-        {/* Left: Viewport (Original & Draft Side-by-Side) */}
-        <div className="flex-[3] bg-slate-200 rounded-xl overflow-hidden border border-slate-300 relative flex flex-col">
-          <div className="bg-slate-800 text-white px-4 py-2 flex justify-between text-xs font-medium">
+      <div className="flex-1 flex gap-5 min-h-0">
+        {/* Left: Viewer */}
+        <div style={{ background: 'rgba(5,46,22,0.5)', border: '1px solid rgba(52,211,153,0.15)' }}
+          className="flex-[3] rounded-2xl overflow-hidden flex flex-col">
+          <div style={{ background: 'rgba(5,46,22,0.9)', borderBottom: '1px solid rgba(52,211,153,0.15)' }}
+            className="px-4 py-2.5 flex justify-between text-xs font-bold">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 opacity-70"><FileText className="w-3 h-3" /> 元資料 (物件概要書)</span>
-              <ArrowRightLeft className="w-3 h-3" />
-              <span className="flex items-center gap-1 text-blue-300"><FileText className="w-3 h-3" /> 提出原稿 ({ad.type})</span>
+              <span style={{ color: '#6ee7b7' }} className="flex items-center gap-1.5">
+                <FileText className="w-3 h-3" /> 元資料 (物件概要書)
+              </span>
+              <ArrowRightLeft className="w-3 h-3 text-emerald-600" />
+              <span style={{ color: '#34d399' }} className="flex items-center gap-1.5">
+                <FileText className="w-3 h-3" /> 提出原稿 ({ad.type})
+              </span>
             </div>
             <div className="flex gap-2">
-              <button className="bg-white/10 px-2 py-0.5 rounded hover:bg-white/20">拡大</button>
-              <button className="bg-white/10 px-2 py-0.5 rounded hover:bg-white/20">差分抽出</button>
+              {['拡大', '差分抽出'].map(t => (
+                <button key={t} style={{ background: 'rgba(52,211,153,0.1)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.2)' }}
+                  className="px-2.5 py-0.5 rounded-lg hover:bg-emerald-500/20 transition-all">{t}</button>
+              ))}
             </div>
           </div>
-          <div className="flex-1 grid grid-cols-2 gap-px bg-slate-400 overflow-auto">
-            {/* Mock Original Content */}
-            <div className="bg-white p-8">
+          <div className="flex-1 grid grid-cols-2 overflow-auto" style={{ gap: '1px', background: 'rgba(52,211,153,0.1)' }}>
+            <div style={{ background: '#f8fafc' }} className="p-8">
               <div className="border-4 border-slate-100 p-6 space-y-4">
                 <h3 className="text-lg font-bold border-b-2 border-slate-900 pb-2">物件概要書</h3>
                 <div className="grid grid-cols-3 text-sm gap-2">
@@ -385,16 +355,13 @@ const ProofreadingEditor = ({ ad, onBack }) => {
                 </div>
               </div>
             </div>
-            {/* Mock Draft Content */}
-            <div className="bg-white p-8">
+            <div style={{ background: '#f8fafc' }} className="p-8">
               <div className="relative border shadow-xl max-w-sm mx-auto p-4 flex flex-col items-center text-center space-y-4">
                 <div className="w-full h-32 bg-slate-100 flex items-center justify-center text-slate-400">
                   <Info className="w-8 h-8 opacity-20" />
                 </div>
                 <h3 className="text-xl font-black text-blue-900">{ad.title}</h3>
-                <div className="bg-rose-600 text-white px-3 py-1 text-sm font-bold rotate-[-2deg]">
-                  地域格安物件！
-                </div>
+                <div className="bg-rose-600 text-white px-3 py-1 text-sm font-bold rotate-[-2deg]">地域格安物件！</div>
                 <p className="text-2xl font-bold text-slate-800 italic">最高級の設備をあなたに</p>
                 <div className="text-sm space-y-1">
                   <p className="border-b border-rose-400 bg-rose-50 px-1 inline-block">東急東横線「代官山」駅 徒歩5分</p>
@@ -406,129 +373,128 @@ const ProofreadingEditor = ({ ad, onBack }) => {
           </div>
         </div>
 
-        {/* Right: Inspection Sidebar */}
-        <div className="flex-[1.5] flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          {/* Sidebar Tabs */}
-          <div className="flex border-b border-slate-200">
-            <button
-              onClick={() => setActiveTab('auto-check')}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${activeTab === 'auto-check' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              AI自動照合
-            </button>
-            <button
-              onClick={() => setActiveTab('manual')}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${activeTab === 'manual' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              チェックリスト
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${activeTab === 'history' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              履歴
-            </button>
+        {/* Right: Sidebar */}
+        <div style={{ background: 'rgba(5,46,22,0.7)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(12px)' }}
+          className="flex-[1.5] flex flex-col rounded-2xl overflow-hidden">
+          {/* Tabs */}
+          <div style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }} className="flex">
+            {tabs.map(t => (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                style={activeTab === t.key
+                  ? { color: '#34d399', borderBottom: '2px solid #10b981', background: 'rgba(16,185,129,0.08)' }
+                  : { color: '#6ee7b7' }}
+                className="flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-all hover:bg-emerald-500/5">
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {activeTab === 'auto-check' && (
               <>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase">不整合・NG警告 ({checks.filter(c => c.status !== 'ok').length})</span>
-                  <button className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">再スキャン</button>
+                <div className="flex items-center justify-between mb-1">
+                  <span style={{ color: '#6ee7b7' }} className="text-xs font-bold uppercase tracking-widest">
+                    不整合・NG警告 ({checks.filter(c => c.status !== 'ok').length})
+                  </span>
+                  <button style={{ background: 'rgba(52,211,153,0.1)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.2)' }}
+                    className="text-[10px] px-2 py-1 rounded-lg">再スキャン</button>
                 </div>
-
-                {checks.map((check) => (
-                  <div
-                    key={check.id}
-                    className={`p-3 rounded-lg border text-sm transition-all ${
-                      check.status === 'error' ? 'bg-rose-50 border-rose-200 shadow-sm' :
-                      check.status === 'warning' ? 'bg-amber-50 border-amber-200 shadow-sm' :
-                      'bg-slate-50 border-slate-200 opacity-70'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                        check.status === 'error' ? 'bg-rose-600 text-white' :
-                        check.status === 'warning' ? 'bg-amber-500 text-white' :
-                        'bg-slate-400 text-white'
-                      }`}>
-                        {check.category}
-                      </span>
-                      {check.status === 'ok' && <Check className="w-4 h-4 text-emerald-500" />}
-                    </div>
-                    <div className="font-bold flex items-center justify-between">
-                      {check.item}
-                      {check.status !== 'ok' && (
-                        <button className="text-[10px] text-blue-600 flex items-center gap-1">修正依頼に追加 <Plus className="w-3 h-3"/></button>
-                      )}
-                    </div>
-                    <div className="mt-2 text-xs flex flex-col gap-1">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">原稿：</span>
-                        <span className={check.status === 'error' ? 'text-rose-600 font-bold' : ''}>{check.value}</span>
+                {checks.map((check) => {
+                  const styles = {
+                    error:   { bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.25)',  badge: '#f43f5e', badgeBg: 'rgba(244,63,94,0.2)' },
+                    warning: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', badge: '#fbbf24', badgeBg: 'rgba(245,158,11,0.2)' },
+                    ok:      { bg: 'rgba(52,211,153,0.05)', border: 'rgba(52,211,153,0.15)', badge: '#6ee7b7', badgeBg: 'rgba(52,211,153,0.1)' },
+                  }[check.status];
+                  return (
+                    <div key={check.id} style={{ background: styles.bg, border: `1px solid ${styles.border}` }}
+                      className="p-3 rounded-xl text-sm">
+                      <div className="flex justify-between items-start mb-1.5">
+                        <span style={{ background: styles.badgeBg, color: styles.badge }}
+                          className="text-[10px] px-2 py-0.5 rounded-full font-bold">{check.category}</span>
+                        {check.status === 'ok' && <Check className="w-4 h-4 text-emerald-400" />}
                       </div>
-                      {check.source && (
-                        <div className="flex justify-between border-t border-slate-100 pt-1">
-                          <span className="text-slate-400">元資料：</span>
-                          <span className="text-slate-600 italic">{check.source}</span>
+                      <div className="font-bold text-white flex items-center justify-between">
+                        {check.item}
+                        {check.status !== 'ok' && (
+                          <button style={{ color: '#34d399' }} className="text-[10px] flex items-center gap-1 hover:underline">
+                            依頼に追加 <Plus className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="mt-2 text-xs flex flex-col gap-1">
+                        <div className="flex justify-between">
+                          <span style={{ color: '#6ee7b7' }}>原稿：</span>
+                          <span style={{ color: check.status === 'error' ? '#fb7185' : '#a7f3d0' }} className={check.status === 'error' ? 'font-bold' : ''}>{check.value}</span>
                         </div>
-                      )}
-                      {check.msg && (
-                        <div className="mt-1 flex items-start gap-1 text-rose-700 font-medium">
-                          <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
-                          <span>{check.msg}</span>
-                        </div>
-                      )}
+                        {check.source && (
+                          <div className="flex justify-between pt-1" style={{ borderTop: '1px solid rgba(52,211,153,0.1)' }}>
+                            <span style={{ color: '#6ee7b7' }}>元資料：</span>
+                            <span style={{ color: '#a7f3d0' }} className="italic">{check.source}</span>
+                          </div>
+                        )}
+                        {check.msg && (
+                          <div className="mt-1 flex items-start gap-1" style={{ color: '#fda4af' }}>
+                            <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
+                            <span>{check.msg}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </>
             )}
 
             {activeTab === 'manual' && (
-              <div className="space-y-4">
-                <div className="text-sm font-bold text-slate-600 border-b pb-2">共通確認事項</div>
+              <div className="space-y-3">
+                <div className="text-xs font-bold uppercase tracking-widest pb-2" style={{ color: '#6ee7b7', borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
+                  共通確認事項
+                </div>
                 {[
                   '広告主の名称・住所の記載があるか',
                   '物件所在地の地番まで記載されているか',
                   '販売価格に消費税等が含まれているか',
-                  '不当表示にあたる「業界No.1」等の文言はないか'
+                  '不当表示にあたる「業界No.1」等の文言はないか',
                 ].map((text, i) => (
-                  <label key={i} className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded cursor-pointer group">
-                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                    <span className="text-sm text-slate-700 group-hover:text-slate-900">{text}</span>
+                  <label key={i} className="flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-all hover:bg-emerald-500/10 group">
+                    <input type="checkbox" className="mt-1 w-4 h-4 rounded accent-emerald-500" />
+                    <span className="text-sm" style={{ color: '#a7f3d0' }}>{text}</span>
                   </label>
                 ))}
               </div>
             )}
 
             {activeTab === 'history' && (
-              <div className="space-y-6 relative ml-4 before:absolute before:left-[-17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                <div className="relative">
-                  <div className="absolute left-[-23px] top-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white ring-4 ring-blue-50" />
-                  <div className="text-xs text-slate-400">今日 11:30</div>
-                  <div className="text-sm font-bold">佐藤（制作）が v2 をアップロード</div>
-                </div>
-                <div className="relative">
-                  <div className="absolute left-[-23px] top-1 w-3 h-3 rounded-full bg-slate-300 border-2 border-white" />
-                  <div className="text-xs text-slate-400">昨日 17:05</div>
-                  <div className="text-sm font-bold">田中（校正）が修正依頼を送信</div>
-                  <div className="text-xs bg-slate-100 p-2 mt-1 rounded italic text-slate-600">「徒歩分数に誤りがあります。概要書は8分です」</div>
-                </div>
+              <div className="space-y-6 relative ml-4" style={{ '--tw-border-opacity': 1 }}>
+                <div className="absolute left-[-17px] top-2 bottom-2 w-0.5" style={{ background: 'rgba(52,211,153,0.2)' }} />
+                {[
+                  { dot: '#10b981', time: '今日 11:30', title: '佐藤（制作）が v2 をアップロード', comment: null },
+                  { dot: '#374151', time: '昨日 17:05', title: '田中（校正）が修正依頼を送信', comment: '「徒歩分数に誤りがあります。概要書は8分です」' },
+                ].map((item, i) => (
+                  <div key={i} className="relative">
+                    <div className="absolute left-[-23px] top-1 w-3 h-3 rounded-full border-2 border-transparent"
+                      style={{ background: item.dot, boxShadow: i === 0 ? '0 0 8px rgba(16,185,129,0.6)' : 'none' }} />
+                    <div className="text-xs" style={{ color: '#6ee7b7' }}>{item.time}</div>
+                    <div className="text-sm font-bold text-white mt-0.5">{item.title}</div>
+                    {item.comment && (
+                      <div className="text-xs mt-1.5 p-2 rounded-lg italic" style={{ background: 'rgba(52,211,153,0.08)', color: '#a7f3d0', border: '1px solid rgba(52,211,153,0.15)' }}>
+                        {item.comment}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Comment input area */}
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
+          {/* Comment Input */}
+          <div className="p-4" style={{ borderTop: '1px solid rgba(52,211,153,0.15)', background: 'rgba(5,46,22,0.5)' }}>
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="コメントを入力..."
-                className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <input type="text" placeholder="コメントを入力..."
+                style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'white' }}
+                className="flex-1 rounded-xl px-3 py-2 text-sm placeholder-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <button style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 2px 12px rgba(16,185,129,0.4)' }}
+                className="text-white p-2 rounded-xl hover:scale-105 transition-all">
                 <Send className="w-4 h-4" />
               </button>
             </div>
