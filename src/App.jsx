@@ -17,10 +17,25 @@ import {
   Building2,
 } from 'lucide-react';
 
+// ─── カラートークン ─────────────────────────────
+const C = {
+  bg:       '#ffffff',
+  surface:  '#f7f7f7',
+  border:   '#e5e5e5',
+  text:     '#111111',
+  muted:    '#777777',
+  accent:   '#f97316',        // orange
+  accentHover: '#ea6c0a',
+  danger:   '#dc2626',
+  warning:  '#d97706',
+  success:  '#16a34a',
+  info:     '#2563eb',
+};
+
+// ─── App ────────────────────────────────────────
 const App = () => {
   const [view, setView] = useState('list');
   const [selectedAd, setSelectedAd] = useState(null);
-
   const [ads, setAds] = useState([
     { id: 1, title: '代官山レジデンス 3F', type: 'チラシ', status: '校正中', progress: 65, date: '2023-10-25', priority: '高' },
     { id: 2, title: '新宿パークタワー 15F', type: 'Webバナー', status: '未着手', progress: 0, date: '2023-10-26', priority: '中' },
@@ -35,98 +50,115 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans" style={{ background: 'linear-gradient(135deg, #052e16 0%, #064e3b 50%, #065f46 100%)' }}>
-      {/* Navigation */}
-      <nav style={{ background: 'rgba(5, 46, 22, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(52, 211, 153, 0.15)' }}
-        className="px-6 py-3 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('list')}>
-          <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 0 16px rgba(16,185,129,0.5)' }} className="p-2 rounded-xl">
-            <ClipboardCheck className="text-white w-6 h-6" />
+    <div style={{ minHeight: '100vh', background: C.surface, color: C.text, fontFamily: "'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif" }}>
+      {/* ─── Navigation ─── */}
+      <nav style={{ background: C.bg, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => setView('list')}>
+            <div style={{ background: C.accent, padding: 6, borderRadius: 6 }}>
+              <ClipboardCheck style={{ color: '#fff', width: 20, height: 20 }} />
+            </div>
+            <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', color: C.text }}>
+              AdChecker <span style={{ color: C.accent }}>PRO</span>
+            </span>
           </div>
-          <h1 className="text-xl font-black tracking-tight text-white">
-            AdChecker <span style={{ color: '#34d399' }}>PRO</span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <button style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
-            className="p-2 rounded-full transition-all hover:bg-emerald-500/20">
-            <Search className="w-5 h-5 text-emerald-300" />
-          </button>
-          <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 0 12px rgba(16,185,129,0.4)' }}
-            className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm">
-            K
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 6, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <Search style={{ width: 18, height: 18, color: C.muted }} />
+            </button>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 14 }}>
+              K
+            </div>
           </div>
         </div>
       </nav>
 
-      <main className="p-6 max-w-7xl mx-auto">
-        {view === 'list' && <Dashboard ads={ads} onOpen={handleOpenAd} onStartRegistration={() => setView('registration')} />}
-        {view === 'editor' && <ProofreadingEditor ad={selectedAd} onBack={() => setView('list')} />}
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
+        {view === 'list'         && <Dashboard ads={ads} onOpen={handleOpenAd} onStartRegistration={() => setView('registration')} />}
+        {view === 'editor'       && <ProofreadingEditor ad={selectedAd} onBack={() => setView('list')} />}
         {view === 'registration' && <RegistrationForm onBack={() => setView('list')} onRegister={handleRegister} />}
       </main>
     </div>
   );
 };
 
-// --- ダッシュボード ---
+// ─── Dashboard ──────────────────────────────────
 const Dashboard = ({ ads, onOpen, onStartRegistration }) => (
-  <div className="space-y-6 animate-in fade-in duration-500">
-    <div className="flex justify-between items-end">
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    {/* Header */}
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
       <div>
-        <h2 className="text-3xl font-black text-white tracking-tight">案件一覧</h2>
-        <p style={{ color: '#6ee7b7' }} className="mt-1">現在 {ads.length} 件の校正タスクがあります</p>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: C.accent, textTransform: 'uppercase', marginBottom: 6 }}>
+          PROOFREADING MANAGEMENT
+        </p>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: C.text, lineHeight: 1.1 }}>案件一覧</h2>
+        <p style={{ fontSize: 14, color: C.muted, marginTop: 4 }}>現在 {ads.length} 件の校正タスクがあります</p>
       </div>
       <button
         onClick={onStartRegistration}
-        style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 24px rgba(16,185,129,0.4)' }}
-        className="text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all hover:scale-105"
+        style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 20px', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, letterSpacing: '0.02em' }}
+        onMouseOver={e => e.currentTarget.style.background = C.accentHover}
+        onMouseOut={e => e.currentTarget.style.background = C.accent}
       >
-        <Plus className="w-5 h-5" /> 新規案件を登録
+        <Plus style={{ width: 16, height: 16 }} /> 新規案件を登録
       </button>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="未着手" value={ads.filter(a => a.status === '未着手').length} accent="#94a3b8" glow="rgba(148,163,184,0.3)" />
-      <StatCard title="校正中" value={ads.filter(a => a.status === '校正中').length} accent="#f59e0b" glow="rgba(245,158,11,0.3)" />
-      <StatCard title="再確認中" value={ads.filter(a => a.status === '再確認中').length} accent="#f43f5e" glow="rgba(244,63,94,0.3)" />
-      <StatCard title="完了" value={ads.filter(a => a.status === '完了').length} accent="#10b981" glow="rgba(16,185,129,0.3)" />
+    {/* Stat Cards */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+      {[
+        { label: '未着手', color: '#9ca3af', value: ads.filter(a => a.status === '未着手').length },
+        { label: '校正中', color: C.warning, value: ads.filter(a => a.status === '校正中').length },
+        { label: '再確認中', color: C.danger, value: ads.filter(a => a.status === '再確認中').length },
+        { label: '完了', color: C.success, value: ads.filter(a => a.status === '完了').length },
+      ].map(({ label, color, value }) => (
+        <div key={label} style={{ background: C.bg, border: `1px solid ${C.border}`, borderTop: `3px solid ${color}`, borderRadius: 8, padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</p>
+            <p style={{ fontSize: 36, fontWeight: 900, color: C.text, lineHeight: 1.1, marginTop: 4 }}>{value}</p>
+          </div>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 14, height: 14, borderRadius: '50%', background: color }} />
+          </div>
+        </div>
+      ))}
     </div>
 
-    <div style={{ background: 'rgba(5,46,22,0.6)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(8px)' }}
-      className="rounded-2xl overflow-hidden">
-      <table className="w-full text-left">
-        <thead style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
-          <tr>
+    {/* Table */}
+    <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ borderBottom: `2px solid ${C.border}` }}>
             {['物件名 / 媒体', 'ステータス', '進捗', '期限', '操作'].map((h, i) => (
-              <th key={h} style={{ color: '#6ee7b7' }}
-                className={`px-6 py-4 text-xs font-bold uppercase tracking-widest ${i === 4 ? 'text-right' : ''}`}>{h}</th>
+              <th key={h} style={{ padding: '14px 24px', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, textAlign: i === 4 ? 'right' : 'left', background: C.surface }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {ads.map((ad) => (
-            <tr key={ad.id} style={{ borderTop: '1px solid rgba(52,211,153,0.08)' }}
-              className="transition-all hover:bg-emerald-500/5 group">
-              <td className="px-6 py-4">
-                <div className="font-bold text-white">{ad.title}</div>
-                <div style={{ color: '#6ee7b7' }} className="text-xs mt-0.5">{ad.type}</div>
+          {ads.map((ad, idx) => (
+            <tr key={ad.id} style={{ borderBottom: idx < ads.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.15s' }}
+              onMouseOver={e => e.currentTarget.style.background = C.surface}
+              onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+              <td style={{ padding: '16px 24px' }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{ad.title}</div>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{ad.type}</div>
               </td>
-              <td className="px-6 py-4">
+              <td style={{ padding: '16px 24px' }}>
                 <StatusBadge status={ad.status} />
               </td>
-              <td className="px-6 py-4">
-                <div className="w-32 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(52,211,153,0.15)' }}>
-                  <div className="h-full rounded-full transition-all"
-                    style={{ width: `${ad.progress}%`, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
+              <td style={{ padding: '16px 24px' }}>
+                <div style={{ width: 120, height: 4, background: C.border, borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{ width: `${ad.progress}%`, height: '100%', background: ad.progress === 100 ? C.success : C.accent, borderRadius: 99 }} />
                 </div>
-                <div style={{ color: '#6ee7b7' }} className="text-xs mt-1">{ad.progress}%</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{ad.progress}%</div>
               </td>
-              <td className="px-6 py-4 text-sm" style={{ color: '#a7f3d0' }}>{ad.date}</td>
-              <td className="px-6 py-4 text-right">
+              <td style={{ padding: '16px 24px', fontSize: 13, color: C.muted }}>{ad.date}</td>
+              <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                 <button onClick={() => onOpen(ad)}
-                  style={{ color: '#34d399' }}
-                  className="font-bold hover:underline flex items-center gap-1 ml-auto text-sm transition-all group-hover:gap-2">
-                  {ad.status === '完了' ? '詳細を見る' : '校正を開始'} <ChevronRight className="w-4 h-4" />
+                  style={{ background: 'none', border: 'none', color: C.accent, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  onMouseOver={e => e.currentTarget.style.color = C.accentHover}
+                  onMouseOut={e => e.currentTarget.style.color = C.accent}>
+                  {ad.status === '完了' ? '詳細を見る' : '校正を開始'} <ChevronRight style={{ width: 14, height: 14 }} />
                 </button>
               </td>
             </tr>
@@ -137,135 +169,117 @@ const Dashboard = ({ ads, onOpen, onStartRegistration }) => (
   </div>
 );
 
-const StatCard = ({ title, value, accent, glow }) => (
-  <div style={{ background: 'rgba(5,46,22,0.6)', border: `1px solid ${accent}30`, backdropFilter: 'blur(8px)', boxShadow: `0 4px 24px ${glow}` }}
-    className="p-5 rounded-2xl flex justify-between items-center">
-    <div>
-      <p className="text-xs font-bold uppercase tracking-widest" style={{ color: accent }}>{title}</p>
-      <p className="text-4xl font-black text-white mt-1">{value}</p>
-    </div>
-    <div className="w-1 h-14 rounded-full" style={{ background: accent, boxShadow: `0 0 12px ${glow}` }} />
-  </div>
-);
-
 const StatusBadge = ({ status }) => {
   const map = {
-    '完了':    { bg: 'rgba(16,185,129,0.15)', color: '#34d399', border: 'rgba(16,185,129,0.3)' },
-    '校正中':  { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
-    '再確認中':{ bg: 'rgba(244,63,94,0.15)',  color: '#fb7185', border: 'rgba(244,63,94,0.3)' },
-    '未着手':  { bg: 'rgba(148,163,184,0.15)',color: '#94a3b8', border: 'rgba(148,163,184,0.3)' },
+    '完了':    { bg: '#dcfce7', color: '#15803d', border: '#bbf7d0' },
+    '校正中':  { bg: '#fef3c7', color: '#b45309', border: '#fde68a' },
+    '再確認中':{ bg: '#fee2e2', color: '#b91c1c', border: '#fecaca' },
+    '未着手':  { bg: '#f3f4f6', color: '#4b5563', border: '#e5e7eb' },
   };
   const s = map[status] || map['未着手'];
   return (
-    <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
-      className="px-3 py-1 rounded-full text-xs font-bold">{status}</span>
+    <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 4, padding: '3px 10px', fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' }}>
+      {status}
+    </span>
   );
 };
 
-// --- 案件登録フォーム ---
+// ─── Registration Form ──────────────────────────
 const RegistrationForm = ({ onBack, onRegister }) => {
-  const [formData, setFormData] = useState({ title: '', type: 'チラシ', priority: '中', date: '', files: { draft: null, source: null } });
+  const [formData, setFormData] = useState({ title: '', type: 'チラシ', priority: '中', date: '', files: {} });
   const handleSubmit = (e) => { e.preventDefault(); if (!formData.title || !formData.date) return; onRegister(formData); };
 
-  const inputStyle = {
-    background: 'rgba(5,46,22,0.6)',
-    border: '1px solid rgba(52,211,153,0.2)',
-    color: 'white',
-    outline: 'none',
-  };
+  const fieldStyle = { width: '100%', padding: '10px 14px', border: `1px solid ${C.border}`, borderRadius: 6, fontSize: 14, color: C.text, background: C.bg, outline: 'none', boxSizing: 'border-box' };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center gap-4">
-        <button onClick={onBack}
-          style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
-          className="p-2 rounded-xl transition-all hover:bg-emerald-500/20">
-          <ArrowLeft className="w-6 h-6 text-emerald-300" />
+    <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Page Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <button onClick={onBack} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px', cursor: 'pointer', display: 'flex' }}>
+          <ArrowLeft style={{ width: 18, height: 18, color: C.muted }} />
         </button>
-        <h2 className="text-2xl font-black text-white">新規案件の登録</h2>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: C.accent, textTransform: 'uppercase', marginBottom: 2 }}>NEW PROJECT</p>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: C.text }}>新規案件の登録</h2>
+        </div>
       </div>
 
-      <div style={{ background: 'rgba(5,46,22,0.7)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(12px)' }}
-        className="rounded-2xl overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
-              <Building2 className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-emerald-400">基本情報</h3>
+      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}>
+        <form onSubmit={handleSubmit}>
+          {/* Section: 基本情報 */}
+          <div style={{ padding: '28px 32px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <Building2 style={{ width: 16, height: 16, color: C.accent }} />
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: C.accent, textTransform: 'uppercase' }}>基本情報</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="col-span-2 space-y-2">
-                <label className="text-sm font-medium text-emerald-300">物件名・案件タイトル</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6, letterSpacing: '0.05em' }}>物件名・案件タイトル</label>
                 <input type="text" placeholder="例：代官山レジデンス 3F リニューアル告知"
-                  style={inputStyle}
-                  className="w-full px-4 py-2.5 rounded-xl placeholder-emerald-900 focus:ring-2 focus:ring-emerald-500 transition-all"
-                  value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+                  style={fieldStyle} value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })} required />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-300">広告媒体</label>
-                <select style={inputStyle} className="w-full px-4 py-2.5 rounded-xl appearance-none"
-                  value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
-                  <option style={{ background: '#052e16' }}>チラシ</option>
-                  <option style={{ background: '#052e16' }}>ポータルサイト</option>
-                  <option style={{ background: '#052e16' }}>Webバナー</option>
-                  <option style={{ background: '#052e16' }}>SNS広告</option>
-                  <option style={{ background: '#052e16' }}>パンフレット</option>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6, letterSpacing: '0.05em' }}>広告媒体</label>
+                <select style={fieldStyle} value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                  {['チラシ', 'ポータルサイト', 'Webバナー', 'SNS広告', 'パンフレット'].map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-300">校正期限</label>
-                <input type="date" style={{ ...inputStyle, colorScheme: 'dark' }}
-                  className="w-full px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-emerald-500"
-                  value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6, letterSpacing: '0.05em' }}>校正期限</label>
+                <input type="date" style={fieldStyle} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} required />
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 pb-2" style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
-              <FileUp className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-emerald-400">データのアップロード</h3>
+          {/* Section: アップロード */}
+          <div style={{ padding: '28px 32px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <FileUp style={{ width: 16, height: 16, color: C.accent }} />
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: C.accent, textTransform: 'uppercase' }}>データのアップロード</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
               {[
-                { label: '元資料 (物件概要書等)', Icon: FileText, accent: '#10b981' },
-                { label: '校正対象 (制作原稿)', Icon: Upload, accent: '#34d399' },
-              ].map(({ label, Icon, accent }) => (
-                <div key={label} className="space-y-3">
-                  <label className="text-sm font-bold text-emerald-300 flex items-center gap-1">
-                    {label} <span className="text-rose-400">*</span>
+                { label: '元資料（物件概要書等）', sub: 'PDF, Excel, スプレッドシートURL', Icon: FileText },
+                { label: '校正対象（制作原稿）', sub: 'PDF, PNG, JPG, Figmaリンク', Icon: Upload },
+              ].map(({ label, sub, Icon }) => (
+                <div key={label}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 8, letterSpacing: '0.05em' }}>
+                    {label} <span style={{ color: C.danger }}>*</span>
                   </label>
-                  <div style={{ border: `2px dashed ${accent}40`, background: `${accent}08` }}
-                    className="rounded-xl p-6 text-center cursor-pointer transition-all hover:border-emerald-400/60 hover:bg-emerald-500/10 group">
-                    <div style={{ background: `${accent}20`, color: accent }}
-                      className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                      <Icon className="w-6 h-6" />
+                  <div style={{ border: `2px dashed ${C.border}`, borderRadius: 8, padding: '28px 20px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = '#fff8f5'; }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = 'transparent'; }}>
+                    <div style={{ width: 40, height: 40, background: '#fff0e8', border: `1px solid #fde0cc`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                      <Icon style={{ width: 18, height: 18, color: C.accent }} />
                     </div>
-                    <p className="text-sm font-medium text-emerald-200">クリックしてアップロード</p>
-                    <p className="text-xs mt-1" style={{ color: '#6ee7b7' }}>PDF, Excel, PNG, Figmaリンク</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: C.text }}>クリックしてアップロード</p>
+                    <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{sub}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
-              className="p-4 rounded-xl flex gap-3 items-start">
-              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-200">
-                <p className="font-bold">AI自動照合のヒント</p>
-                <p className="mt-0.5 text-amber-300/80">物件概要書をアップロードすると、AIが徒歩分数・面積・所在地・取引態様を自動抽出し、原稿との整合性を即座にチェックします。</p>
+
+            {/* Hint */}
+            <div style={{ marginTop: 20, background: '#fffbeb', border: `1px solid #fde68a`, borderRadius: 6, padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <AlertTriangle style={{ width: 16, height: 16, color: C.warning, flexShrink: 0, marginTop: 1 }} />
+              <div style={{ fontSize: 13, color: '#92400e' }}>
+                <strong>AI自動照合のヒント：</strong>
+                物件概要書をアップロードすると、AIが徒歩分数・面積・所在地・取引態様を自動抽出し、原稿との整合性を即座にチェックします。
               </div>
             </div>
-          </section>
+          </div>
 
-          <div className="pt-6 flex justify-end gap-3" style={{ borderTop: '1px solid rgba(52,211,153,0.1)' }}>
+          {/* Footer */}
+          <div style={{ padding: '20px 32px', display: 'flex', justifyContent: 'flex-end', gap: 12, background: C.surface }}>
             <button type="button" onClick={onBack}
-              style={{ border: '1px solid rgba(52,211,153,0.3)', color: '#6ee7b7' }}
-              className="px-6 py-2.5 rounded-xl font-medium transition-all hover:bg-emerald-500/10">
+              style={{ background: C.bg, color: C.muted, border: `1px solid ${C.border}`, borderRadius: 6, padding: '10px 20px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
               キャンセル
             </button>
             <button type="submit"
-              style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 24px rgba(16,185,129,0.4)' }}
-              className="px-8 py-2.5 rounded-xl text-white font-black transition-all hover:scale-105">
+              style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontWeight: 700, fontSize: 14, cursor: 'pointer', letterSpacing: '0.02em' }}
+              onMouseOver={e => e.currentTarget.style.background = C.accentHover}
+              onMouseOut={e => e.currentTarget.style.background = C.accent}>
               案件を登録して解析開始
             </button>
           </div>
@@ -275,9 +289,11 @@ const RegistrationForm = ({ onBack, onRegister }) => {
   );
 };
 
-// --- 校正エディタ ---
+// ─── Proofreading Editor ─────────────────────────
 const ProofreadingEditor = ({ ad, onBack }) => {
   const [activeTab, setActiveTab] = useState('auto-check');
+  const [comment, setComment] = useState('');
+
   const checks = [
     { id: 1, category: '必須表記', item: '取引態様', status: 'ok', value: '媒介', source: '媒介' },
     { id: 2, category: '数値整合', item: '徒歩分数', status: 'error', value: '徒歩5分', source: '徒歩8分', msg: '元資料と3分の乖離があります' },
@@ -293,149 +309,144 @@ const ProofreadingEditor = ({ ad, onBack }) => {
   ];
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col gap-5 animate-in slide-in-from-right-4 duration-500">
+    <div style={{ height: 'calc(100vh - 160px)', display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack}
-            style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}
-            className="p-2 rounded-xl transition-all hover:bg-emerald-500/20">
-            <ArrowLeft className="w-5 h-5 text-emerald-300" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button onClick={onBack} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: 8, cursor: 'pointer', display: 'flex' }}>
+            <ArrowLeft style={{ width: 16, height: 16, color: C.muted }} />
           </button>
           <div>
-            <h2 className="text-xl font-black text-white">{ad.title}</h2>
-            <p style={{ color: '#6ee7b7' }} className="text-sm">制作：佐藤クリエイティブ / {ad.date} 提出</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: C.accent, textTransform: 'uppercase', marginBottom: 2 }}>PROOFREADING</p>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: C.text }}>{ad.title}</h2>
+            <p style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>制作：佐藤クリエイティブ / {ad.date} 提出</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button style={{ border: '1px solid rgba(52,211,153,0.3)', color: '#6ee7b7' }}
-            className="px-4 py-2 rounded-xl font-medium transition-all hover:bg-emerald-500/10 text-sm">
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={{ background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 16px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
             修正依頼を送る
           </button>
-          <button style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 16px rgba(16,185,129,0.4)' }}
-            className="px-4 py-2 text-white rounded-xl font-bold transition-all hover:scale-105 text-sm flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> 掲載OK（承認）
+          <button style={{ background: C.success, color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CheckCircle2 style={{ width: 15, height: 15 }} /> 掲載OK（承認）
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex gap-5 min-h-0">
-        {/* Left: Viewer */}
-        <div style={{ background: 'rgba(5,46,22,0.5)', border: '1px solid rgba(52,211,153,0.15)' }}
-          className="flex-[3] rounded-2xl overflow-hidden flex flex-col">
-          <div style={{ background: 'rgba(5,46,22,0.9)', borderBottom: '1px solid rgba(52,211,153,0.15)' }}
-            className="px-4 py-2.5 flex justify-between text-xs font-bold">
-            <div className="flex items-center gap-4">
-              <span style={{ color: '#6ee7b7' }} className="flex items-center gap-1.5">
-                <FileText className="w-3 h-3" /> 元資料 (物件概要書)
+      <div style={{ flex: 1, display: 'flex', gap: 16, minHeight: 0 }}>
+        {/* ─── Viewer ─── */}
+        <div style={{ flex: 3, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: C.bg }}>
+          {/* Viewer toolbar */}
+          <div style={{ background: C.text, padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 11, fontWeight: 600 }}>
+              <span style={{ color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <FileText style={{ width: 11, height: 11 }} /> 元資料（物件概要書）
               </span>
-              <ArrowRightLeft className="w-3 h-3 text-emerald-600" />
-              <span style={{ color: '#34d399' }} className="flex items-center gap-1.5">
-                <FileText className="w-3 h-3" /> 提出原稿 ({ad.type})
+              <ArrowRightLeft style={{ width: 11, height: 11, color: '#4b5563' }} />
+              <span style={{ color: C.accent, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <FileText style={{ width: 11, height: 11 }} /> 提出原稿（{ad.type}）
               </span>
             </div>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 6 }}>
               {['拡大', '差分抽出'].map(t => (
-                <button key={t} style={{ background: 'rgba(52,211,153,0.1)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.2)' }}
-                  className="px-2.5 py-0.5 rounded-lg hover:bg-emerald-500/20 transition-all">{t}</button>
+                <button key={t} style={{ background: '#ffffff18', color: '#d1d5db', border: '1px solid #ffffff22', borderRadius: 4, padding: '3px 10px', fontSize: 11, cursor: 'pointer' }}>{t}</button>
               ))}
             </div>
           </div>
-          <div className="flex-1 grid grid-cols-2 overflow-auto" style={{ gap: '1px', background: 'rgba(52,211,153,0.1)' }}>
-            <div style={{ background: '#f8fafc' }} className="p-8">
-              <div className="border-4 border-slate-100 p-6 space-y-4">
-                <h3 className="text-lg font-bold border-b-2 border-slate-900 pb-2">物件概要書</h3>
-                <div className="grid grid-cols-3 text-sm gap-2">
-                  <div className="bg-slate-100 p-2 font-bold">物件名</div>
-                  <div className="col-span-2 p-2">{ad.title}</div>
-                  <div className="bg-slate-100 p-2 font-bold">交通</div>
-                  <div className="col-span-2 p-2 underline decoration-red-500 decoration-2">代官山駅 徒歩8分</div>
-                  <div className="bg-slate-100 p-2 font-bold">面積</div>
-                  <div className="col-span-2 p-2">65.50㎡</div>
-                </div>
+
+          {/* Viewer content */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: C.border, overflow: 'auto' }}>
+            {/* Source doc */}
+            <div style={{ background: '#fff', padding: 32 }}>
+              <div style={{ border: '3px solid #f3f4f6', padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 800, borderBottom: '2px solid #111', paddingBottom: 8, marginBottom: 16 }}>物件概要書</h3>
+                <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                  {[['物件名', ad.title], ['交通', '代官山駅 徒歩8分'], ['面積', '65.50㎡']].map(([k, v]) => (
+                    <tr key={k}>
+                      <td style={{ background: '#f9fafb', padding: '8px 12px', fontWeight: 700, width: '33%', border: '1px solid #e5e7eb' }}>{k}</td>
+                      <td style={{ padding: '8px 12px', border: '1px solid #e5e7eb', textDecoration: k === '交通' ? 'underline' : 'none', textDecorationColor: k === '交通' ? C.danger : 'transparent', textDecorationThickness: 2 }}>{v}</td>
+                    </tr>
+                  ))}
+                </table>
               </div>
             </div>
-            <div style={{ background: '#f8fafc' }} className="p-8">
-              <div className="relative border shadow-xl max-w-sm mx-auto p-4 flex flex-col items-center text-center space-y-4">
-                <div className="w-full h-32 bg-slate-100 flex items-center justify-center text-slate-400">
-                  <Info className="w-8 h-8 opacity-20" />
+            {/* Draft doc */}
+            <div style={{ background: '#fff', padding: 32, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+              <div style={{ position: 'relative', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', maxWidth: 280, width: '100%', padding: 20, textAlign: 'center' }}>
+                <div style={{ background: '#f3f4f6', height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <Info style={{ width: 32, height: 32, color: '#d1d5db' }} />
                 </div>
-                <h3 className="text-xl font-black text-blue-900">{ad.title}</h3>
-                <div className="bg-rose-600 text-white px-3 py-1 text-sm font-bold rotate-[-2deg]">地域格安物件！</div>
-                <p className="text-2xl font-bold text-slate-800 italic">最高級の設備をあなたに</p>
-                <div className="text-sm space-y-1">
-                  <p className="border-b border-rose-400 bg-rose-50 px-1 inline-block">東急東横線「代官山」駅 徒歩5分</p>
-                  <p>専有面積：65.50㎡</p>
+                <h3 style={{ fontSize: 17, fontWeight: 900, color: '#1e3a8a', marginBottom: 10 }}>{ad.title}</h3>
+                <div style={{ background: C.danger, color: '#fff', display: 'inline-block', padding: '4px 12px', fontSize: 12, fontWeight: 700, transform: 'rotate(-2deg)', marginBottom: 10 }}>
+                  地域格安物件！
                 </div>
-                <div className="absolute top-2 right-2 bg-amber-400 text-[10px] p-1 font-bold">Draft v2</div>
+                <p style={{ fontSize: 18, fontWeight: 900, color: '#111', fontStyle: 'italic', marginBottom: 12 }}>最高級の設備をあなたに</p>
+                <div style={{ fontSize: 12 }}>
+                  <p style={{ background: '#fee2e2', borderBottom: `1px solid ${C.danger}`, display: 'inline-block', padding: '2px 6px', marginBottom: 4 }}>東急東横線「代官山」駅 徒歩5分</p>
+                  <p style={{ color: '#374151' }}>専有面積：65.50㎡</p>
+                </div>
+                <div style={{ position: 'absolute', top: 8, right: 8, background: '#fbbf24', fontSize: 9, padding: '2px 5px', fontWeight: 700 }}>Draft v2</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Sidebar */}
-        <div style={{ background: 'rgba(5,46,22,0.7)', border: '1px solid rgba(52,211,153,0.15)', backdropFilter: 'blur(12px)' }}
-          className="flex-[1.5] flex flex-col rounded-2xl overflow-hidden">
+        {/* ─── Sidebar ─── */}
+        <div style={{ flex: 1.5, minWidth: 280, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: C.bg }}>
           {/* Tabs */}
-          <div style={{ borderBottom: '1px solid rgba(52,211,153,0.15)' }} className="flex">
+          <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}` }}>
             {tabs.map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                style={activeTab === t.key
-                  ? { color: '#34d399', borderBottom: '2px solid #10b981', background: 'rgba(16,185,129,0.08)' }
-                  : { color: '#6ee7b7' }}
-                className="flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-all hover:bg-emerald-500/5">
+                style={{ flex: 1, padding: '12px 0', fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', border: 'none', cursor: 'pointer', borderBottom: activeTab === t.key ? `2px solid ${C.accent}` : '2px solid transparent', color: activeTab === t.key ? C.accent : C.muted, background: activeTab === t.key ? '#fff8f5' : C.bg, transition: 'all 0.15s' }}>
                 {t.label}
               </button>
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Sidebar content */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {activeTab === 'auto-check' && (
               <>
-                <div className="flex items-center justify-between mb-1">
-                  <span style={{ color: '#6ee7b7' }} className="text-xs font-bold uppercase tracking-widest">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     不整合・NG警告 ({checks.filter(c => c.status !== 'ok').length})
                   </span>
-                  <button style={{ background: 'rgba(52,211,153,0.1)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.2)' }}
-                    className="text-[10px] px-2 py-1 rounded-lg">再スキャン</button>
+                  <button style={{ fontSize: 11, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: '3px 10px', cursor: 'pointer', color: C.muted }}>再スキャン</button>
                 </div>
                 {checks.map((check) => {
-                  const styles = {
-                    error:   { bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.25)',  badge: '#f43f5e', badgeBg: 'rgba(244,63,94,0.2)' },
-                    warning: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', badge: '#fbbf24', badgeBg: 'rgba(245,158,11,0.2)' },
-                    ok:      { bg: 'rgba(52,211,153,0.05)', border: 'rgba(52,211,153,0.15)', badge: '#6ee7b7', badgeBg: 'rgba(52,211,153,0.1)' },
+                  const s = {
+                    error:   { bg: '#fff1f2', border: '#fecdd3', catBg: '#fee2e2', catColor: C.danger },
+                    warning: { bg: '#fffbeb', border: '#fde68a', catBg: '#fef3c7', catColor: C.warning },
+                    ok:      { bg: '#f9fafb', border: C.border,  catBg: '#f3f4f6', catColor: '#6b7280' },
                   }[check.status];
                   return (
-                    <div key={check.id} style={{ background: styles.bg, border: `1px solid ${styles.border}` }}
-                      className="p-3 rounded-xl text-sm">
-                      <div className="flex justify-between items-start mb-1.5">
-                        <span style={{ background: styles.badgeBg, color: styles.badge }}
-                          className="text-[10px] px-2 py-0.5 rounded-full font-bold">{check.category}</span>
-                        {check.status === 'ok' && <Check className="w-4 h-4 text-emerald-400" />}
+                    <div key={check.id} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 6, padding: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ background: s.catBg, color: s.catColor, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 3, letterSpacing: '0.06em' }}>{check.category}</span>
+                        {check.status === 'ok' && <Check style={{ width: 14, height: 14, color: C.success }} />}
                       </div>
-                      <div className="font-bold text-white flex items-center justify-between">
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         {check.item}
                         {check.status !== 'ok' && (
-                          <button style={{ color: '#34d399' }} className="text-[10px] flex items-center gap-1 hover:underline">
-                            依頼に追加 <Plus className="w-3 h-3" />
+                          <button style={{ background: 'none', border: 'none', fontSize: 10, color: C.accent, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2, fontWeight: 700 }}>
+                            依頼に追加 <Plus style={{ width: 10, height: 10 }} />
                           </button>
                         )}
                       </div>
-                      <div className="mt-2 text-xs flex flex-col gap-1">
-                        <div className="flex justify-between">
-                          <span style={{ color: '#6ee7b7' }}>原稿：</span>
-                          <span style={{ color: check.status === 'error' ? '#fb7185' : '#a7f3d0' }} className={check.status === 'error' ? 'font-bold' : ''}>{check.value}</span>
+                      <div style={{ marginTop: 8, fontSize: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: C.muted }}>原稿：</span>
+                          <span style={{ color: check.status === 'error' ? C.danger : C.text, fontWeight: check.status === 'error' ? 700 : 400 }}>{check.value}</span>
                         </div>
                         {check.source && (
-                          <div className="flex justify-between pt-1" style={{ borderTop: '1px solid rgba(52,211,153,0.1)' }}>
-                            <span style={{ color: '#6ee7b7' }}>元資料：</span>
-                            <span style={{ color: '#a7f3d0' }} className="italic">{check.source}</span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 4, borderTop: `1px solid ${C.border}` }}>
+                            <span style={{ color: C.muted }}>元資料：</span>
+                            <span style={{ color: C.muted, fontStyle: 'italic' }}>{check.source}</span>
                           </div>
                         )}
                         {check.msg && (
-                          <div className="mt-1 flex items-start gap-1" style={{ color: '#fda4af' }}>
-                            <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
-                            <span>{check.msg}</span>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginTop: 4, color: C.danger, fontWeight: 600 }}>
+                            <AlertTriangle style={{ width: 11, height: 11, flexShrink: 0, marginTop: 1 }} />
+                            <span style={{ fontSize: 11 }}>{check.msg}</span>
                           </div>
                         )}
                       </div>
@@ -446,40 +457,37 @@ const ProofreadingEditor = ({ ad, onBack }) => {
             )}
 
             {activeTab === 'manual' && (
-              <div className="space-y-3">
-                <div className="text-xs font-bold uppercase tracking-widest pb-2" style={{ color: '#6ee7b7', borderBottom: '1px solid rgba(52,211,153,0.15)' }}>
-                  共通確認事項
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', paddingBottom: 8, borderBottom: `1px solid ${C.border}`, marginBottom: 4 }}>共通確認事項</p>
                 {[
                   '広告主の名称・住所の記載があるか',
                   '物件所在地の地番まで記載されているか',
                   '販売価格に消費税等が含まれているか',
                   '不当表示にあたる「業界No.1」等の文言はないか',
                 ].map((text, i) => (
-                  <label key={i} className="flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-all hover:bg-emerald-500/10 group">
-                    <input type="checkbox" className="mt-1 w-4 h-4 rounded accent-emerald-500" />
-                    <span className="text-sm" style={{ color: '#a7f3d0' }}>{text}</span>
+                  <label key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 8px', borderRadius: 6, cursor: 'pointer', fontSize: 13, color: C.text, transition: 'background 0.15s' }}
+                    onMouseOver={e => e.currentTarget.style.background = C.surface}
+                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                    <input type="checkbox" style={{ marginTop: 2, accentColor: C.accent }} />
+                    {text}
                   </label>
                 ))}
               </div>
             )}
 
             {activeTab === 'history' && (
-              <div className="space-y-6 relative ml-4" style={{ '--tw-border-opacity': 1 }}>
-                <div className="absolute left-[-17px] top-2 bottom-2 w-0.5" style={{ background: 'rgba(52,211,153,0.2)' }} />
+              <div style={{ paddingLeft: 20, position: 'relative' }}>
+                <div style={{ position: 'absolute', left: 8, top: 6, bottom: 6, width: 1, background: C.border }} />
                 {[
-                  { dot: '#10b981', time: '今日 11:30', title: '佐藤（制作）が v2 をアップロード', comment: null },
-                  { dot: '#374151', time: '昨日 17:05', title: '田中（校正）が修正依頼を送信', comment: '「徒歩分数に誤りがあります。概要書は8分です」' },
+                  { color: C.accent, time: '今日 11:30', title: '佐藤（制作）が v2 をアップロード', comment: null },
+                  { color: C.border, time: '昨日 17:05', title: '田中（校正）が修正依頼を送信', comment: '「徒歩分数に誤りがあります。概要書は8分です」' },
                 ].map((item, i) => (
-                  <div key={i} className="relative">
-                    <div className="absolute left-[-23px] top-1 w-3 h-3 rounded-full border-2 border-transparent"
-                      style={{ background: item.dot, boxShadow: i === 0 ? '0 0 8px rgba(16,185,129,0.6)' : 'none' }} />
-                    <div className="text-xs" style={{ color: '#6ee7b7' }}>{item.time}</div>
-                    <div className="text-sm font-bold text-white mt-0.5">{item.title}</div>
+                  <div key={i} style={{ position: 'relative', marginBottom: i === 0 ? 20 : 0 }}>
+                    <div style={{ position: 'absolute', left: -16, top: 4, width: 10, height: 10, borderRadius: '50%', background: item.color, border: `2px solid ${C.bg}`, boxShadow: `0 0 0 2px ${item.color}` }} />
+                    <p style={{ fontSize: 11, color: C.muted }}>{item.time}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: C.text, marginTop: 2 }}>{item.title}</p>
                     {item.comment && (
-                      <div className="text-xs mt-1.5 p-2 rounded-lg italic" style={{ background: 'rgba(52,211,153,0.08)', color: '#a7f3d0', border: '1px solid rgba(52,211,153,0.15)' }}>
-                        {item.comment}
-                      </div>
+                      <p style={{ fontSize: 12, color: C.muted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', marginTop: 6, fontStyle: 'italic' }}>{item.comment}</p>
                     )}
                   </div>
                 ))}
@@ -487,17 +495,15 @@ const ProofreadingEditor = ({ ad, onBack }) => {
             )}
           </div>
 
-          {/* Comment Input */}
-          <div className="p-4" style={{ borderTop: '1px solid rgba(52,211,153,0.15)', background: 'rgba(5,46,22,0.5)' }}>
-            <div className="flex gap-2">
-              <input type="text" placeholder="コメントを入力..."
-                style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'white' }}
-                className="flex-1 rounded-xl px-3 py-2 text-sm placeholder-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              <button style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 2px 12px rgba(16,185,129,0.4)' }}
-                className="text-white p-2 rounded-xl hover:scale-105 transition-all">
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Comment input */}
+          <div style={{ padding: '12px 16px', borderTop: `1px solid ${C.border}`, background: C.surface, display: 'flex', gap: 8 }}>
+            <input type="text" placeholder="コメントを入力..." value={comment} onChange={e => setComment(e.target.value)}
+              style={{ flex: 1, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13, outline: 'none', background: C.bg }} />
+            <button style={{ background: C.accent, border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              onMouseOver={e => e.currentTarget.style.background = C.accentHover}
+              onMouseOut={e => e.currentTarget.style.background = C.accent}>
+              <Send style={{ width: 14, height: 14, color: '#fff' }} />
+            </button>
           </div>
         </div>
       </div>
